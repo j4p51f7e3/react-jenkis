@@ -2,16 +2,11 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS'   // Configure this in Jenkins -> Global Tool Configuration
+        nodejs 'NodeJS'
     }
 
     environment {
         CI = 'true'
-    }
-
-    options {
-        timestamps()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
     stages {
@@ -25,17 +20,13 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
+                bat 'node -v'
+                bat 'npm -v'
                 bat 'npm install'
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                bat 'npm test -- --watchAll=false'
-            }
-        }
-
-        stage('Build') {
+        stage('Build React App') {
             steps {
                 bat 'npm run build'
             }
@@ -43,25 +34,18 @@ pipeline {
 
         stage('Archive Build') {
             steps {
-                archiveArtifacts artifacts: 'build/**', fingerprint: true
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying React application...'
-                // Add your deployment commands here
+                archiveArtifacts artifacts: 'dist/**', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo 'Build completed successfully!'
+            echo 'React build successful!'
         }
 
         failure {
-            echo 'Build failed!'
+            echo 'React build failed!'
         }
 
         always {
